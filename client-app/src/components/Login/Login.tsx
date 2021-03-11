@@ -2,29 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, Redirect } from "react-router-dom";
 import { useApiEndpoints } from "../../hooks/hooks";
-
-export interface IUserFormData {
-  username: string;
-  password: string;
-}
-
-export type UserForm = {
-  username: string | null;
-  password: string | null;
-};
-
-export interface ILoginResponse {
-  authorized: boolean;
-  errors?: UserForm;
-}
-
-function useLogin() {
-  return useApiEndpoints((data: IUserFormData) => ({
-    url: `http://localhost:3000/api/users/authorize`,
-    method: "POST",
-    data,
-  }));
-}
+import { IUserFormData, UserForm } from "../../types/types";
 
 export const Login: React.FC = (props) => {
   const {
@@ -37,7 +15,6 @@ export const Login: React.FC = (props) => {
   });
 
   const [userLoggedIn, setUserLogIn] = useLogin();
-
   const { data, complete, error } = userLoggedIn;
 
   return (
@@ -80,3 +57,15 @@ export const Login: React.FC = (props) => {
     </>
   );
 };
+
+/**
+ * Custom Hook, post data to Authorize User endpoint
+ * @returns Hook
+ */
+function useLogin() {
+  return useApiEndpoints((data: IUserFormData) => ({
+    url: `http://localhost:3000/api/users/authorize`,
+    method: "POST",
+    data,
+  }));
+}

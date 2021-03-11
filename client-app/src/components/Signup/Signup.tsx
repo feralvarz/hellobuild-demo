@@ -1,13 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
-import request from "superagent";
-import { useFirstRender } from "../../hooks/hooks";
-
-type UserForm = {
-  username: string;
-  password: string;
-};
+import { Link, Redirect } from "react-router-dom";
+import { useApiEndpoints } from "../../hooks/hooks";
+import { IUserFormData, UserForm } from "../../types/types";
 
 export const Signup: React.FC = (props) => {
   const {
@@ -18,23 +13,9 @@ export const Signup: React.FC = (props) => {
     mode: "onChange",
     reValidateMode: "onChange",
   });
-  const [signupForm, setSignupForm] = useState<UserForm>({} as UserForm);
-  const [userRegistered, setUserRegistered] = useState<string>("");
-  const firstRender = useFirstRender();
 
-  useEffect(() => {
-    if (!firstRender && isValid) {
-      const LS = JSON.stringify(signupForm);
-      localStorage.setItem("userLogin", LS);
-      request
-        .post(`http://localhost:3000/api/users/register`)
-        .set("Accept", "application/json")
-        .send(signupForm)
-        .then((response) => {
-          setUserRegistered(response.text);
-        });
-    }
-  });
+  const [userRegistered, setUserRegistered] = useRegister();
+  const { data, complete, error } = userRegistered;
 
   const removeLocalStorage = () => {
     localStorage.clear();
@@ -43,10 +24,9 @@ export const Signup: React.FC = (props) => {
   return (
     <>
       <h2>Signup Component</h2>
-      <form onSubmit={handleSubmit(setSignupForm)} autoComplete="off">
+      <form onSubmit={handleSubmit(setUserRegistered)} autoComplete="off">
         <input type="hidden" autoComplete="false" />
         <div style={{ marginBottom: 20 }}>
-          {" "}
           <label>Username</label>
           <input
             ref={register({ required: true })}
@@ -54,6 +34,7 @@ export const Signup: React.FC = (props) => {
             placeholder="Username"
             name="username"
           />
+          {data && data.errors?.username && <small>Invalid Username</small>}
         </div>
         <div style={{ marginBottom: 20 }}>
           <label>Password</label>
@@ -63,6 +44,7 @@ export const Signup: React.FC = (props) => {
             placeholder="Password"
             name="password"
           />
+          {data && data.errors?.password && <small>Invalid Password</small>}
         </div>
         <div style={{ marginBottom: 20 }}>
           <button type="submit" disabled={!isValid}>
@@ -70,11 +52,9 @@ export const Signup: React.FC = (props) => {
           </button>
         </div>
       </form>
-      {!!userRegistered && (
-        <p>
-          User <strong>{userRegistered}</strong> has been created.
-        </p>
-      )}
+
+      {!error && complete && <Redirect to="/login" />}
+
       <div style={{ marginBottom: 20 }}>
         <button onClick={removeLocalStorage}>Remove LocalStorage</button>
       </div>
@@ -85,3 +65,15 @@ export const Signup: React.FC = (props) => {
     </>
   );
 };
+
+/**
+ * Custom Hook, post data to Register User endpoint
+ * @returns Hook
+ */
+function useRegister() {
+  return useApiEndpoints((data: IUserFormData) => ({
+    url: `http://localhost:3000/api/users/register`,
+    method: "POST",
+    data,
+  }));
+}
