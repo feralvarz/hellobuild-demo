@@ -7,6 +7,7 @@ const logger = require("morgan");
 const cors = require("cors");
 const indexRouter = require("./routes/index");
 const githubRouter = require("./routes/github");
+const userRouter = require("./routes/users");
 const calendarRouter = require("./routes/calendar");
 const app = express();
 // view engine setup
@@ -19,6 +20,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 app.use("/", indexRouter);
+app.use("/api/users", userRouter);
 app.use("/api/github", githubRouter);
 app.use("/calendar", calendarRouter);
 

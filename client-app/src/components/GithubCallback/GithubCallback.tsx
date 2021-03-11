@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
 import request from "superagent";
 
 export const GithubCallback: React.FC = (props) => {
-  let apiResponse = "";
+  const apiResponse: React.MutableRefObject<string | null> = useRef(null);
   const query = useQuery();
   const code = query.get("code");
 
@@ -14,7 +14,7 @@ export const GithubCallback: React.FC = (props) => {
       .post(`http://localhost:3000/api/github/oauth2callback?code=${code}`)
       .set("Accept", "application/json")
       .then((response) => {
-        apiResponse = response.text; // gh is authorized
+        apiResponse.current = response.text; // gh is authorized
       });
   }, [code]);
 
