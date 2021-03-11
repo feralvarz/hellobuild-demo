@@ -1,30 +1,30 @@
 import { gql } from "graphql-request";
 
-const viewerRepos = `
-query {
-  viewer {
-    repositories(first: 1) {
-      nodes {
-        nameWithOwner
-        description
-        name
-        languages(first: 50){
-          totalCount
-          nodes {
-            name
-            color
+export const viewerRepos = gql`
+  query {
+    viewer {
+      repositories(first: 30) {
+        nodes {
+          nameWithOwner
+          description
+          name
+          languages(first: 50) {
+            totalCount
+            nodes {
+              name
+              color
+            }
           }
-
-        }
-        stargazers(first:50) {
-          nodes {
-            name
+          stargazers(first: 50) {
+            nodes {
+              name
+            }
           }
         }
       }
     }
   }
-}`;
+`;
 
 export const repositoriesByUsername = gql`
   query($username: String!, $count: Int!) {

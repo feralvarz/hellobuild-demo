@@ -19,7 +19,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 app.use("/", indexRouter);
-app.use("/github", githubRouter);
+app.use("/api/github", githubRouter);
 app.use("/calendar", calendarRouter);
 
 // catch 404 and forward to error handler
