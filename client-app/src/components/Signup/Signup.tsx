@@ -34,7 +34,7 @@ export const Signup: React.FC = (props) => {
           setUserRegistered(response.text);
         });
     }
-  }, [firstRender, signupForm]);
+  });
 
   const removeLocalStorage = () => {
     localStorage.clear();

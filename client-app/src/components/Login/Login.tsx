@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
-import request from "superagent";
-import { useFirstRender } from "../../hooks/hooks";
+import { Link, Redirect } from "react-router-dom";
+import { useApiEndpoints } from "../../hooks/hooks";
 
-type UserForm = {
+export interface IUserFormData {
+  username: string;
+  password: string;
+}
+
+export type UserForm = {
   username: string | null;
   password: string | null;
 };
@@ -12,6 +16,14 @@ type UserForm = {
 export interface ILoginResponse {
   authorized: boolean;
   errors?: UserForm;
+}
+
+function useLogin() {
+  return useApiEndpoints((data: IUserFormData) => ({
+    url: `http://localhost:3000/api/users/authorize`,
+    method: "POST",
+    data,
+  }));
 }
 
 export const Login: React.FC = (props) => {
@@ -23,32 +35,15 @@ export const Login: React.FC = (props) => {
     mode: "onChange",
     reValidateMode: "onChange",
   });
-  const [loginForm, setLoginForm] = useState<UserForm>({} as UserForm);
 
-  const [userLoggedIn, setUserLoggedIn] = useState<ILoginResponse>({
-    authorized: false,
-  });
-  const firstRender = useFirstRender();
+  const [userLoggedIn, setUserLogIn] = useLogin();
 
-  useEffect(() => {
-    if (!firstRender && isValid) {
-      request
-        .post(`http://localhost:3000/api/users/authorize`)
-        .set("Accept", "application/json")
-        .send(loginForm)
-        .then(({ body }: { body: ILoginResponse }) => {
-          setUserLoggedIn(body);
-          if (body.authorized) {
-            console.log("User is authorized, redirect to home page");
-          }
-        });
-    }
-  }, [firstRender, loginForm]);
+  const { data, complete, error } = userLoggedIn;
 
   return (
     <>
       <h2>Login Component</h2>
-      <form onSubmit={handleSubmit(setLoginForm)} autoComplete="off">
+      <form onSubmit={handleSubmit(setUserLogIn)} autoComplete="off">
         <input type="hidden" autoComplete="false" />
         <div style={{ marginBottom: 20 }}>
           <label>Username</label>
@@ -58,7 +53,7 @@ export const Login: React.FC = (props) => {
             placeholder="Username"
             name="username"
           />
-          {userLoggedIn.errors?.username && <small>Invalid Username</small>}
+          {data && data.errors?.username && <small>Invalid Username</small>}
         </div>
         <div style={{ marginBottom: 20 }}>
           <label>Password</label>
@@ -68,7 +63,7 @@ export const Login: React.FC = (props) => {
             placeholder="Password"
             name="password"
           />
-          {userLoggedIn.errors?.password && <small>Invalid Password</small>}
+          {data && data.errors?.password && <small>Invalid Password</small>}
         </div>
         <div style={{ marginBottom: 20 }}>
           <button type="submit" disabled={!isValid}>
@@ -76,6 +71,8 @@ export const Login: React.FC = (props) => {
           </button>
         </div>
       </form>
+
+      {!error && complete && <Redirect to="/" />}
 
       <p>
         Return to <Link to="/">Home</Link>
