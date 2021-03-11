@@ -2,8 +2,6 @@ import React from "react";
 import "./App.css";
 
 const App: React.FC = (props) => {
-  // target = "_blank";
-  // rel = "noopener noreferrer";
   return (
     <>
       <div>
@@ -17,8 +15,7 @@ const App: React.FC = (props) => {
 };
 
 /**
- *
- * @returns Generates a github url to authorize the application
+ * Generates a github url to authorize the application
  */
 function getGithubOAuthURL(): string {
   const ghOptions = {
@@ -26,12 +23,9 @@ function getGithubOAuthURL(): string {
     scopes:
       "public_repo%20read:gpg_key%20read:org%20read:public_key%20read:repo_hook%20repo:status%20repo_deployment%20user",
     redirectURI: "http://localhost:3001/github/oauth2callback",
-    // secret: generateSecret(10),
   };
 
   const githubOauthUrl: string = `https://github.com/login/oauth/authorize?client_id=${ghOptions.clientId}&scope=${ghOptions.scopes}&redirect_uri=${ghOptions.redirectURI}`;
-
-  //&state=${ghOptions.secret}
 
   return githubOauthUrl;
 }
