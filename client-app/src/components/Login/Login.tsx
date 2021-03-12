@@ -49,7 +49,7 @@ export const Login: React.FC = (props) => {
         </div>
       </form>
 
-      {!error && complete && <Redirect to="/" />}
+      {!error && complete && <Redirect to="/profile" />}
 
       <p>
         Return to <Link to="/">Home</Link>

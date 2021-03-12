@@ -2,7 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, Redirect } from "react-router-dom";
 import { useRegister } from "../../hooks/hooks";
-import { UserForm } from "../../types/types";
+import { IUserFormData, UserForm } from "../../types/types";
 
 export const Signup: React.FC = (props) => {
   const {
@@ -17,6 +17,11 @@ export const Signup: React.FC = (props) => {
   const [userRegistered, setUserRegistered] = useRegister();
   const { data, complete, error } = userRegistered;
 
+  const handleSignUp = (data: IUserFormData) => {
+    localStorage.setItem("userLogin", JSON.stringify(data));
+    setUserRegistered(data);
+  };
+
   const removeLocalStorage = () => {
     localStorage.clear();
   };
@@ -24,7 +29,7 @@ export const Signup: React.FC = (props) => {
   return (
     <>
       <h2>Signup Component</h2>
-      <form onSubmit={handleSubmit(setUserRegistered)} autoComplete="off">
+      <form onSubmit={handleSubmit(handleSignUp)} autoComplete="off">
         <input type="hidden" autoComplete="false" />
         <div style={{ marginBottom: 20 }}>
           <label>Username</label>

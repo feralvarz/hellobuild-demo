@@ -94,12 +94,34 @@ export function useRegister() {
 }
 
 /**
- * Custom Hook, post data to Register User endpoint
+ * Custom Hook, handle GH secret code to generate a token in API
  * @returns Hook
  */
 export function useGithubTokenCallback() {
   return useApiEndpoints(({ code }: { code: string }) => ({
     url: `http://localhost:3000/api/github/oauth2callback?code=${code}`,
+    method: "POST",
+  }));
+}
+
+/**
+ * Custom Hook, check if user has granted authorization to Github
+ * @returns Hook
+ */
+export function useGithubAuthorized() {
+  return useApiEndpoints(() => ({
+    url: `http://localhost:3000/api/github/authorized`,
+    method: "GET",
+  }));
+}
+
+/**
+ * Custom Hook, post data to Register User endpoint
+ * @returns Hook
+ */
+export function useListRepos() {
+  return useApiEndpoints((data: any) => ({
+    url: `http://localhost:3000/api/github/repos`,
     method: "POST",
   }));
 }

@@ -11,6 +11,9 @@ export const Home: React.FC = (props) => {
       <p>
         Don't you have an account? <Link to="/signup">Signup here</Link>
       </p>
+      <p>
+        <Link to="/profile">Profile page</Link>
+      </p>
     </>
   );
 };
