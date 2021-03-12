@@ -51,11 +51,15 @@ router.get("/authorized", async (req, res, next) => {
 router.post("/oauth2callback", async (req, res, next) => {
   const { query } = req;
   const { code } = query;
+  let errors = {
+    token: null,
+  };
+  let response = {
+    authorized: false,
+  };
 
   if (!code) {
-    res.send({
-      error: "There was an error processing the token from github",
-    });
+    errors.token = "There was an error processing the token from github";
   }
 
   request
@@ -68,22 +72,19 @@ router.post("/oauth2callback", async (req, res, next) => {
     .set("Accept", "application/json")
     .then((result) => {
       const token = result.body;
-      console.log(`2️⃣ result data: ${JSON.stringify(token)}`);
       if (token.error) {
         console.log(`🔥 Token request error: ${JSON.stringify(token.error)}`);
-        next({ error: token.error });
+        errors.token = "The code passed is incorrect or expired.";
+        response.errors = errors;
+      } else {
+        response.authorized = true;
+        // Write new token
+        fs.writeFile(GITHUB_USER_TOKEN_PATH, JSON.stringify(token), (err) => {
+          if (err) return console.error(`🔥 ${err}`);
+          console.log("✅  Token saved to: ", GITHUB_USER_TOKEN_PATH);
+        });
       }
-
-      console.log(`3️⃣ Result: ${JSON.stringify(result)}`);
-      console.log(`4️⃣ authorized: ${JSON.stringify(token)}`);
-
-      // Write new token
-      fs.writeFile(GITHUB_USER_TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) return console.error(`🔥 ${err}`);
-        console.log("✅  Token saved to: ", GITHUB_USER_TOKEN_PATH);
-      });
-
-      res.send("Github has been authorized.");
+      res.send(response);
     })
     .catch((err) => console.log(err));
 });

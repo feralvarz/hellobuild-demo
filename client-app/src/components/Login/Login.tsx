@@ -1,8 +1,8 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, Redirect } from "react-router-dom";
-import { useApiEndpoints } from "../../hooks/hooks";
-import { IUserFormData, UserForm } from "../../types/types";
+import { useLogin } from "../../hooks/hooks";
+import { UserForm } from "../../types/types";
 
 export const Login: React.FC = (props) => {
   const {
@@ -57,15 +57,3 @@ export const Login: React.FC = (props) => {
     </>
   );
 };
-
-/**
- * Custom Hook, post data to Authorize User endpoint
- * @returns Hook
- */
-function useLogin() {
-  return useApiEndpoints((data: IUserFormData) => ({
-    url: `http://localhost:3000/api/users/authorize`,
-    method: "POST",
-    data,
-  }));
-}

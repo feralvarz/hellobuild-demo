@@ -1,5 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { useRef, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { IUserFormData } from "../types/types";
 
 /**
  * Helper to detect first render in components
@@ -53,4 +55,51 @@ export function useApiEndpoints(
   }, [req]);
 
   return [res, (...args: any) => setReq(fn(...args))];
+}
+
+/**
+ * A custom hook that builds on useLocation to parse
+ * the query string for you *
+ */
+export function useQuery(): URLSearchParams {
+  return new URLSearchParams(useLocation().search);
+}
+
+/**
+ * API
+ */
+
+/**
+ * Custom Hook, post data to Authorize User endpoint
+ * @returns Hook
+ */
+export function useLogin() {
+  return useApiEndpoints((data: IUserFormData) => ({
+    url: `http://localhost:3000/api/users/authorize`,
+    method: "POST",
+    data,
+  }));
+}
+
+/**
+ * Custom Hook, post data to Register User endpoint
+ * @returns Hook
+ */
+export function useRegister() {
+  return useApiEndpoints((data: IUserFormData) => ({
+    url: `http://localhost:3000/api/users/register`,
+    method: "POST",
+    data,
+  }));
+}
+
+/**
+ * Custom Hook, post data to Register User endpoint
+ * @returns Hook
+ */
+export function useGithubTokenCallback() {
+  return useApiEndpoints(({ code }: { code: string }) => ({
+    url: `http://localhost:3000/api/github/oauth2callback?code=${code}`,
+    method: "POST",
+  }));
 }

@@ -5,9 +5,7 @@ const App: React.FC = (props) => {
   return (
     <>
       <div>
-        <a className="App-link" href={getGithubOAuthURL()}>
-          Authorize Github
-        </a>
+        <a href={getGithubOAuthURL()}>Authorize Github</a>
       </div>
       <main>{props.children}</main>
     </>

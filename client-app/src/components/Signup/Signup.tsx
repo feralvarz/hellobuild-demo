@@ -1,8 +1,8 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, Redirect } from "react-router-dom";
-import { useApiEndpoints } from "../../hooks/hooks";
-import { IUserFormData, UserForm } from "../../types/types";
+import { useRegister } from "../../hooks/hooks";
+import { UserForm } from "../../types/types";
 
 export const Signup: React.FC = (props) => {
   const {
@@ -65,15 +65,3 @@ export const Signup: React.FC = (props) => {
     </>
   );
 };
-
-/**
- * Custom Hook, post data to Register User endpoint
- * @returns Hook
- */
-function useRegister() {
-  return useApiEndpoints((data: IUserFormData) => ({
-    url: `http://localhost:3000/api/users/register`,
-    method: "POST",
-    data,
-  }));
-}
