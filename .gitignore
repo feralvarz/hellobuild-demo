@@ -1,1 +1,4 @@
 api/node_modules
+api/calendar-token.json
+api/github-token.json
+api/user-credentials.json
