@@ -1,42 +1,27 @@
 import React from "react";
 import "./App.css";
 
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { Home } from "./components/Home/Home";
+import { GithubCallback } from "./components/GithubCallback/GithubCallback";
+import { Signup } from "./components/Signup/Signup";
+import { Login } from "./components/Login/Login";
+import { Profile } from "./components/Profile/Profile";
+import { GoogleCallback } from "./components/GoogleCallback/GoogleCallback";
+
 const App: React.FC = (props) => {
   return (
-    <>
-      <div>
-        <a href={getGithubOAuthURL()}>Authorize Github</a>
-      </div>
-      <main>{props.children}</main>
-    </>
+    <Router>
+      <Switch>
+        <Route exact path="/login" component={Login} />
+        <Route exact path="/signup" component={Signup} />
+        <Route path="/github/oauth2callback" component={GithubCallback} />
+        <Route path="/calendar/oauth2callback" component={GoogleCallback} />
+        <Route exact path="/profile" component={Profile} />
+        <Route exact path="/" component={Home} />
+      </Switch>
+    </Router>
   );
 };
-
-/**
- * Generates a github url to authorize the application
- */
-function getGithubOAuthURL(): string {
-  const ghOptions = {
-    clientId: "bdff31232777fec87534",
-    scopes:
-      "public_repo%20read:gpg_key%20read:org%20read:public_key%20read:repo_hook%20repo:status%20repo_deployment%20user",
-    redirectURI: "http://localhost:3001/github/oauth2callback",
-  };
-
-  const githubOauthUrl: string = `https://github.com/login/oauth/authorize?client_id=${ghOptions.clientId}&scope=${ghOptions.scopes}&redirect_uri=${ghOptions.redirectURI}`;
-
-  return githubOauthUrl;
-}
-
-/**
- * Generates a random hex string from a given size
- * @param size The lenght of the string
- * @returns string
- */
-// function generateSecret(size: number): string {
-//   return [...Array(size)]
-//     .map(() => Math.floor(Math.random() * 16).toString(16))
-//     .join("");
-// }
 
 export default App;

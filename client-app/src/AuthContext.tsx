@@ -1,19 +1,22 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-// import request from "superagent";
+import React, { createContext, useContext } from "react";
+import { useGithubAuthorized, useLogin } from "./hooks/hooks";
+interface IAuthContext {
+  [key: string]: any;
+}
 
-const AuthContext = createContext({});
+const AuthContext = createContext<IAuthContext>({});
 
-const AuthProvider: React.FC = (props) => {
-  const [ghAuthorized, setGHAuthorized] = useState(false);
-
-  useEffect(() => {
-    // get logged in state from github / read token
-  }, []);
-
-  const authContextValue = {};
+const AuthProvider = (props: any) => {
+  const [userLoggedIn, setUserLogIn] = useLogin();
+  const [ghAuthorized, setGHAuthorized] = useGithubAuthorized();
+  const authContextValue = {
+    userLoggedIn,
+    setUserLogIn,
+    ghAuthorized,
+    setGHAuthorized,
+  };
   return <AuthContext.Provider value={authContextValue} {...props} />;
 };
 
-const useAuth = useContext(AuthContext);
-
+const useAuth = () => useContext(AuthContext);
 export { AuthProvider, useAuth };

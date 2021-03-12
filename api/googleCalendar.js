@@ -1,7 +1,7 @@
-const express = require("express");
+import { resolve } from "path";
+
 const fs = require("fs");
 const { google } = require("googleapis");
-const open = require("opn");
 
 const SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"];
 const CALENDAR_CREDENTIALS = "calendar-credentials.json";
@@ -18,6 +18,7 @@ export class GoogleCalendarAuth {
     readFile(CALENDAR_CREDENTIALS).then((secret) => {
       _credentials = JSON.parse(secret);
       const { client_secret, client_id, redirect_uris } = _credentials.web;
+      this.authUrl = "";
 
       // Creating client
       this.oAuth2Client = new google.auth.OAuth2(
@@ -32,10 +33,45 @@ export class GoogleCalendarAuth {
     });
   }
 
+  getOauthURL() {
+    return this.oAauthUrl;
+  }
+
   authorize() {
     const client = this.oAuth2Client;
     debugMessage(`2️⃣ authorize ${JSON.stringify(client)}`);
-    authorizeToken(client);
+    this.authorizeToken(client);
+  }
+  /**
+   * Authorize user
+   * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
+   */
+  authorizeToken(oAuth2Client) {
+    debugMessage(`3️⃣ authorizeToken ${JSON.stringify(oAuth2Client)}`);
+
+    fs.readFile(CALENDAR_TOKEN_PATH, (err, token) => {
+      // Require a new accessToken if we don't have a stored token
+      if (err) return;
+      //getAccessToken(oAuth2Client, authUrl);
+
+      // SetToken from stored value
+      oAuth2Client.setCredentials(JSON.parse(token));
+      console.log("✅  Google calendar token set from system");
+    });
+  }
+
+  /**
+   * Get and store new token after prompting for user authorization, and then
+   * execute the given callback with the authorized OAuth2 client.
+   * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
+   * @param {getEventsCallback} callback The callback for the authorized client.
+   */
+  getAccessToken() {
+    const oAauthUrl = this.oAuth2Client.generateAuthUrl({
+      access_type: "offline",
+      scope: SCOPES,
+    });
+    return oAauthUrl;
   }
 
   /**
@@ -89,37 +125,6 @@ export async function readFile(path) {
 }
 
 /**
- * Authorize user
- * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
- */
-function authorizeToken(oAuth2Client) {
-  debugMessage(`3️⃣ authorizeToken ${JSON.stringify(oAuth2Client)}`);
-  fs.readFile(CALENDAR_TOKEN_PATH, (err, token) => {
-    // Require a new accessToken if we don't have a stored token
-    if (err) return getAccessToken(oAuth2Client);
-
-    // SetToken from stored value
-    oAuth2Client.setCredentials(JSON.parse(token));
-    console.log("✅  Google calendar token set from system");
-  });
-}
-
-/**
- * Get and store new token after prompting for user authorization, and then
- * execute the given callback with the authorized OAuth2 client.
- * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
- * @param {getEventsCallback} callback The callback for the authorized client.
- */
-function getAccessToken(oAuth2Client) {
-  console.log(`4️⃣ getAccessToken ${JSON.stringify(oAuth2Client)}`);
-  const authUrl = oAuth2Client.generateAuthUrl({
-    access_type: "offline",
-    scope: SCOPES,
-  });
-
-  console.log("🅾️ Opening OAuth dialog in browser...");
-  open(authUrl);
-}
 
 /**
  * Delete token from File system

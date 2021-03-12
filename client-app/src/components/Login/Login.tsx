@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, Redirect } from "react-router-dom";
-import { useLogin } from "../../hooks/hooks";
+import { useAuth } from "../../AuthContext";
 import { UserForm } from "../../types/types";
 
 export const Login: React.FC = (props) => {
@@ -14,7 +14,7 @@ export const Login: React.FC = (props) => {
     reValidateMode: "onChange",
   });
 
-  const [userLoggedIn, setUserLogIn] = useLogin();
+  const { userLoggedIn, setUserLogIn } = useAuth();
   const { data, complete, error } = userLoggedIn;
 
   return (

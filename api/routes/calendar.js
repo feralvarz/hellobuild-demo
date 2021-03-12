@@ -8,18 +8,23 @@ const gCal = new GoogleCalendarAuth();
 /**
  * Auth endpoint for google calendar
  */
+router.get("/auth-url", async (req, res, next) => {
+  const url = gCal.getAccessToken();
+  res.send(url);
+});
+
 router.get("/authorize", async (req, res, next) => {
   gCal.authorize();
-  res.send("🅾️ Auth process...");
+  res.send(true);
 });
 
 /**
- * Google Oauth Callback
+ * Google Oauth Callback, sets token
  */
-router.get("/oauth2callback", async (req, res, next) => {
+router.post("/oauth2callback", async (req, res, next) => {
   const code = req.query.code;
   gCal.writeToken(code);
-  res.send("Authorized, close this tab and click refresh button in the app");
+  res.send("Google Token added");
 });
 
 router.delete("/", async (req, res, next) => {

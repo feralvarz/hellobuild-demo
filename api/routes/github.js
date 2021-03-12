@@ -94,7 +94,7 @@ router.post("/repos", async (req, res, next) => {
   // .request(viewerRepos, variables)
   try {
     const data = await client.request(viewerRepos);
-    res.json(data);
+    res.json(data.viewer.repositories.nodes);
   } catch (err) {
     next({ error: err.message });
   }

@@ -5,6 +5,7 @@ export const viewerRepos = gql`
     viewer {
       repositories(first: 30) {
         nodes {
+          id
           nameWithOwner
           description
           name

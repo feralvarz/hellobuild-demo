@@ -1,16 +1,16 @@
 import React, { useRef } from "react";
 import { Redirect } from "react-router-dom";
-import { useGithubTokenCallback, useQuery } from "../../hooks/hooks";
+import { useGoogleTokenCallback, useQuery } from "../../hooks/hooks";
 
-export const GithubCallback: React.FC = (props) => {
-  const [ghToken, setGHToken] = useGithubTokenCallback();
-  const { complete } = ghToken;
+export const GoogleCallback: React.FC = (props) => {
+  const [calToken, setCalToken] = useGoogleTokenCallback();
+  const { complete } = calToken;
   const query = useQuery();
   const code: string | null = query.get("code");
   const apiResponse: React.MutableRefObject<boolean> = useRef(false);
 
   if (!apiResponse.current) {
-    setGHToken({ code });
+    setCalToken({ code });
     apiResponse.current = true;
   }
 

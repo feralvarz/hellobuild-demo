@@ -105,6 +105,30 @@ export function useGithubTokenCallback() {
 }
 
 /**
+ * Custom Hook, handle Google secret code to generate a token in API
+ * @returns Hook
+ */
+export function useGoogleTokenCallback() {
+  return useApiEndpoints(({ code }: { code: string }) => ({
+    url: `http://localhost:3000/calendar/oauth2callback?code=${code}`,
+    method: "POST",
+  }));
+}
+
+/**
+ * Custom Hook, handles Google's authorization
+ * note: after first authorization is necessary to call again this endpoint
+ * in order to perform a token refresh
+ * @returns Hook
+ */
+export function useGoogleAuthorize() {
+  return useApiEndpoints((data: any) => ({
+    url: `http://localhost:3000/calendar/authorize`,
+    method: "GET",
+  }));
+}
+
+/**
  * Custom Hook, check if user has granted authorization to Github
  * @returns Hook
  */
@@ -116,7 +140,7 @@ export function useGithubAuthorized() {
 }
 
 /**
- * Custom Hook, post data to Register User endpoint
+ * Custom Hook, List repositories by viewer
  * @returns Hook
  */
 export function useListRepos() {
@@ -124,4 +148,57 @@ export function useListRepos() {
     url: `http://localhost:3000/api/github/repos`,
     method: "POST",
   }));
+}
+
+/**
+ * Custom Hook, post data to Register User endpoint
+ * @returns Hook
+ */
+export function useListEvents() {
+  return useApiEndpoints((data: any) => ({
+    url: `http://localhost:3000/calendar/list`,
+    method: "GET",
+  }));
+}
+
+/**
+ * Custom Hook, gets url to open google calendar oauth
+ * @returns Hook
+ */
+export function useCalendarAuthURL() {
+  return useApiEndpoints(() => ({
+    url: `http://localhost:3000/calendar/auth-url`,
+    method: "GET",
+  }));
+}
+
+/**.
+ * Helpers
+ */
+
+/**
+ * Generates a github url to authorize the application
+ */
+export function getGithubOAuthURL(): string {
+  const ghOptions = {
+    clientId: "bdff31232777fec87534",
+    scopes:
+      "public_repo%20read:gpg_key%20read:org%20read:public_key%20read:repo_hook%20repo:status%20repo_deployment%20user",
+    redirectURI: "http://localhost:3001/github/oauth2callback",
+  };
+
+  const githubOauthUrl: string = `https://github.com/login/oauth/authorize?client_id=${ghOptions.clientId}&scope=${ghOptions.scopes}&redirect_uri=${ghOptions.redirectURI}`;
+
+  return githubOauthUrl;
+}
+
+/**
+ * Generates a random hex string from a given size
+ * @param size The lenght of the string
+ * @returns string
+ */
+export function generateSecret(size: number): string {
+  return [...Array(size)]
+    .map(() => Math.floor(Math.random() * 16).toString(16))
+    .join("");
 }
