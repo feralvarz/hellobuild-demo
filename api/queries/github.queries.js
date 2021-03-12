@@ -16,11 +16,6 @@ export const viewerRepos = gql`
               color
             }
           }
-          stargazers(first: 50) {
-            nodes {
-              name
-            }
-          }
         }
       }
     }
