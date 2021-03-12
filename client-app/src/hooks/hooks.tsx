@@ -121,10 +121,33 @@ export function useGoogleTokenCallback() {
  * in order to perform a token refresh
  * @returns Hook
  */
-export function useGoogleAuthorize() {
+export function useGoogleAuthorizeRefresh() {
   return useApiEndpoints((data: any) => ({
     url: `http://localhost:3000/calendar/authorize`,
     method: "GET",
+  }));
+}
+
+/**
+ * Custom Hook, check if user has granted authorization to Google
+ * @returns Hook
+ */
+export function useGoogleIsAuthorized() {
+  return useApiEndpoints(() => ({
+    url: `http://localhost:3000/calendar/authorized`,
+    method: "GET",
+  }));
+}
+
+/**
+ * Custom Hook, cancel an event in calendar
+ * @returns Hook
+ */
+export function useCancelCalEvent() {
+  return useApiEndpoints((data: any) => ({
+    url: `http://localhost:3000/calendar/cancelevent`,
+    method: "POST",
+    data,
   }));
 }
 

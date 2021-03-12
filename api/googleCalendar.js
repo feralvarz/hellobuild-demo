@@ -3,7 +3,10 @@ import { resolve } from "path";
 const fs = require("fs");
 const { google } = require("googleapis");
 
-const SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"];
+const SCOPES = [
+  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/calendar.events",
+];
 const CALENDAR_CREDENTIALS = "calendar-credentials.json";
 export const CALENDAR_TOKEN_PATH = "calendar-token.json";
 const DEBUG = false;

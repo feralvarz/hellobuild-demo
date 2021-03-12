@@ -91,7 +91,7 @@ router.post("/oauth2callback", async (req, res, next) => {
 
 router.post("/repos", async (req, res, next) => {
   // const variables = req.body;
-  // .request(viewerRepos, variables)
+
   try {
     const data = await client.request(viewerRepos);
     res.json(data.viewer.repositories.nodes);
