@@ -1,0 +1,36 @@
+@import "@fontsource/libre-franklin";
+@import "@fontsource/libre-franklin/700";
+
+$primary: #172c45;
+$green: #18d399;
+
+$font-family-base: "Libre Franklin";
+$headings-font-weight: 700;
+$btn-font-weight: 700;
+$body-color: #484848;
+$headings-color: $primary;
+
+@import "~bootstrap/scss/bootstrap";
+
+body {
+  background-color: #fafafa;
+  font-size: 18px;
+}
+body,
+#root {
+  min-height: 100vh;
+}
+
+a {
+  font-weight: 700;
+}
+
+.base-form {
+  border-radius: 12px;
+  padding: 24px;
+  background-color: white;
+  &-wrapper {
+    min-height: 100vh;
+    display: grid;
+  }
+}
