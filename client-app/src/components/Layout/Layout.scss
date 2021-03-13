@@ -1,0 +1,38 @@
+.layout-wrapper {
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+
+  aside {
+    width: 300px;
+    background-color: var(--primary);
+    .inner {
+      padding: 16px 0 16px 16px;
+      nav {
+        margin: 0 -16px;
+        .list-group-item {
+          &-custom {
+            background-color: transparent;
+            border-color: rgba(white, 0.15);
+            a:not(.active) {
+              color: rgba(white, 0.8);
+            }
+          }
+        }
+      }
+    }
+    .brand {
+      margin-bottom: 40px;
+    }
+    .active {
+      color: var(--green);
+    }
+  }
+
+  main {
+    background-color: #f0f4f8;
+    .inner {
+      padding: 16px 0;
+    }
+  }
+}
