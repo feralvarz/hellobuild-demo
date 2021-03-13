@@ -2,23 +2,42 @@ import React from "react";
 import "./App.css";
 
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import { Home } from "./components/Home/Home";
 import { GithubCallback } from "./components/GithubCallback/GithubCallback";
-import { Signup } from "./components/Signup/Signup";
+import { GoogleCallback } from "./components/GoogleCallback/GoogleCallback";
+import { Home } from "./components/Home/Home";
 import { Login } from "./components/Login/Login";
 import { Profile } from "./components/Profile/Profile";
-import { GoogleCallback } from "./components/GoogleCallback/GoogleCallback";
+import { Signup } from "./components/Signup/Signup";
+import { PrivateRoute } from "./routes/PrivateRoute";
+import { useAuth } from "./AuthContext";
 
-const App: React.FC = (props) => {
+const App = () => {
+  const { userLoggedIn } = useAuth();
+  const authorized = userLoggedIn?.data?.authorized;
+
   return (
     <Router>
       <Switch>
-        <Route exact path="/login" component={Login} />
+        <PrivateRoute
+          allowWhen={authorized}
+          path="/github/oauth2callback"
+          component={GithubCallback}
+        />
+        <PrivateRoute
+          allowWhen={authorized}
+          path="/calendar/oauth2callback"
+          component={GoogleCallback}
+        />
+        <PrivateRoute
+          allowWhen={authorized}
+          exact
+          path="/profile"
+          component={Profile}
+        />
+        <PrivateRoute allowWhen={authorized} exact path="/" component={Home} />
         <Route exact path="/signup" component={Signup} />
-        <Route path="/github/oauth2callback" component={GithubCallback} />
-        <Route path="/calendar/oauth2callback" component={GoogleCallback} />
-        <Route exact path="/profile" component={Profile} />
-        <Route exact path="/" component={Home} />
+        <Route exact path="/login" component={Login} />
+        <Route component={Login} />
       </Switch>
     </Router>
   );
