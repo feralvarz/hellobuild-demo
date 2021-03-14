@@ -3,8 +3,8 @@
   position: relative;
   overflow: hidden;
 
-  aside {
-    width: 300px;
+  aside.sidebar {
+    width: 210px;
     background-color: var(--primary);
     .inner {
       padding: 16px 0 16px 16px;
@@ -31,8 +31,6 @@
 
   main {
     background-color: #f0f4f8;
-    .inner {
-      padding: 16px 0;
-    }
+    height: 100%;
   }
 }

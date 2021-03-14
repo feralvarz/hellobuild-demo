@@ -1,108 +1,100 @@
 import React, { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
 import { useAuth } from "../../AuthContext";
-import "./FavoriteRepositories.css";
+import "./FavoriteRepositories.scss";
+import Select, { ActionMeta, OptionTypeBase } from "react-select";
+import { Toast } from "react-bootstrap";
+import {
+  IFavoriteRepositoriesProps,
+  ISearchOption,
+  IFavRepos,
+} from "./FavoriteRepositories.types";
 
-export interface IFavoriteRepositoriesProps {
-  repos: any[];
-}
 export const FavoriteRepositories: React.FC<IFavoriteRepositoriesProps> = (
   props: IFavoriteRepositoriesProps
 ) => {
   return (
-    <>
+    <div className="fav-wrapper">
+      <h2 className="h5 font-weight-normal mb-2">Favorites</h2>
       <SearchRepo repos={props.repos} />
-    </>
+
+      <FavList />
+    </div>
+  );
+};
+
+const FavList = () => {
+  const { favs, setFavorite } = useAuth();
+
+  // Removes repos from favorites
+  const removeFavorite = (id: string) => {
+    setFavorite((currState: any) => {
+      const updatedState = JSON.parse(JSON.stringify(currState));
+      delete updatedState.byName[id];
+      return updatedState;
+    });
+  };
+
+  return (
+    <div className="row fav-repos-wrapper">
+      {Object.values(favs.byName).map((repo: any) => (
+        <div key={repo.id} className="col-12">
+          <Toast onClose={() => removeFavorite(repo.id)}>
+            <Toast.Header>
+              <strong className="mr-auto">{repo.name}</strong>
+            </Toast.Header>
+            <Toast.Body>{repo.description || "No description"}</Toast.Body>
+          </Toast>
+        </div>
+      ))}
+    </div>
   );
 };
 
 export const SearchRepo: React.FC<IFavoriteRepositoriesProps> = (
   props: IFavoriteRepositoriesProps
 ) => {
-  const { favs, setFavorite } = useAuth();
+  const { setFavorite } = useAuth();
   const changeRef = useRef<number>(0);
-  const [results, setResults] = useState<any>([]);
+  const [options, setOptions] = useState<any>([]);
 
-  const handleResult = (data: any) => {
-    const items = props.repos.filter((repo) => {
-      const rname: string = repo.name;
-      return rname.includes(data.repoName);
-    });
-
-    setResults(items);
-  };
-
-  const addFavorite = (item: any) => {
-    setFavorite((currState: any) => {
+  const addFavorite = (
+    value: OptionTypeBase | null,
+    actionMeta: ActionMeta<OptionTypeBase>
+  ) => {
+    const { value: id, originalIndex: i } = value as ISearchOption;
+    setFavorite((currState: IFavRepos) => {
       const updatedState = JSON.parse(JSON.stringify(currState));
-      updatedState.byName[item.id] = item;
-      setResults([]);
-
-      return updatedState;
-    });
-  };
-
-  const removeFavorite = (id: string) => {
-    setFavorite((currState: any) => {
-      const updatedState = JSON.parse(JSON.stringify(currState));
-
-      delete updatedState.byName[id];
+      updatedState.byName[id] = props.repos[i];
 
       return updatedState;
     });
   };
 
   if (changeRef.current === 0) {
-    handleResult({ name: "" });
+    const opts = props.repos.map((r, i) => ({
+      value: r.id,
+      label: r.name,
+      originalIndex: i,
+    }));
+
+    setOptions(opts);
     changeRef.current = new Date().getTime();
   }
 
-  const { register, handleSubmit } = useForm<{ name: string }>({
-    mode: "onSubmit",
-    reValidateMode: "onSubmit",
-  });
-
   return (
     <>
-      <div className="fav-repos-wrapper search-wrapper">
-        <h3>Search </h3>
-        <form onSubmit={handleSubmit(handleResult)} autoComplete="off">
-          <div style={{ marginBottom: 20 }}>
-            <input
-              ref={register()}
-              type="text"
-              placeholder="Search repository"
-              name="repoName"
-            />
-            <button type="submit">Search</button>
-          </div>
-        </form>
-        <ul>
-          {results.map((repo: any) => (
-            <li key={repo.id}>
-              <div>
-                <h2>{repo.name}</h2>
-                <button onClick={() => addFavorite(repo)}>Add favorite</button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="fav-repos-wrapper">
-        <ul>
-          {Object.values(favs.byName).map((repo: any, index) => (
-            <li key={index}>
-              {repo.name}{" "}
-              <span>
-                <button onClick={() => removeFavorite(repo.id)}>
-                  Remove item
-                </button>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Select
+        className="basic-single"
+        classNamePrefix="select"
+        placeholder="Filter repositories..."
+        value={null}
+        onChange={addFavorite}
+        isClearable
+        isSearchable
+        isDisabled={!options}
+        name="color"
+        options={options}
+      />
     </>
   );
 };

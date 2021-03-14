@@ -3,6 +3,7 @@ import { GoogleCalendarAuth, CALENDAR_TOKEN_PATH } from "../googleCalendar";
 const express = require("express");
 const router = express.Router();
 const { google } = require("googleapis");
+import { readFile } from "../googleCalendar";
 
 const gCal = new GoogleCalendarAuth();
 /**
@@ -24,7 +25,7 @@ router.get("/authorized", async (req, res, next) => {
       res.send(true);
     })
     .catch((err) => {
-      res.send(false);
+      res.status(401).send(false);
     });
 });
 
@@ -64,8 +65,8 @@ router.get("/list", async (req, res, next) => {
     },
     (err, response) => {
       if (err) {
-        res.json({
-          error: "Forbidden, googleCalendar is not authorized.",
+        res.status(401).json({
+          errors: "Forbidden, googleCalendar is not authorized.",
         });
         console.log("The API returned an error: " + err);
         return;

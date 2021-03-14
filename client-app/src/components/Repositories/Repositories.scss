@@ -1,0 +1,22 @@
+.content {
+  height: 100%;
+  .inner {
+    height: 100%;
+    margin: 16px 0;
+    h1 {
+      margin-bottom: 55px;
+    }
+
+    .repo-list {
+      overflow-y: auto;
+      height: 100%;
+      padding-bottom: 160px;
+    }
+  }
+}
+
+aside {
+  height: 100%;
+  background-color: rgba(#d0d3d7, 0.2);
+  border-left: solid rgba(#d0d3d7, 0.4);
+}

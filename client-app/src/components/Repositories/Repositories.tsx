@@ -1,15 +1,17 @@
 import React, { useEffect } from "react";
-import { useAuth } from "../../AuthContext";
+import "./Repositories.scss";
 import {
   getGithubOAuthURL,
   useFirstRender,
+  useGithubAuthorized,
   useListRepos,
 } from "../../hooks/hooks";
 import { FavoriteRepositories } from "../FavoriteRepositories/FavoriteRepositories";
 
-export const Repositories: React.FC = (props: any) => {
-  const { ghAuthorized, setGHAuthorized } = useAuth();
-
+import { Repo } from "./Repo";
+import { Layout } from "../Layout/Layout";
+export const Repositories: React.FC = () => {
+  const [ghAuthorized, setGHAuthorized] = useGithubAuthorized();
   const [repositories, setRequestRepos] = useListRepos();
   const firstRender = useFirstRender();
 
@@ -21,24 +23,33 @@ export const Repositories: React.FC = (props: any) => {
   });
 
   return (
-    <>
-      <div>
-        <div style={{ display: "inline-block" }}>
-          <h2>Github Repositories</h2>
-          {ghAuthorized?.data !== null && ghAuthorized?.data === false && (
-            <a href={getGithubOAuthURL()}>Authorize Github</a>
-          )}
-          {ghAuthorized?.data && (
-            <ul>
-              {repositories.data &&
-                repositories.data.map((repo: any) => (
-                  <li key={repo.id}>{repo.name}</li>
-                ))}
-            </ul>
-          )}
+    <Layout>
+      <div className="row h-100">
+        <div className="col content">
+          <div className="inner">
+            <h1>Your repositories</h1>
+
+            <div className="row repo-list">
+              {ghAuthorized.data
+                ? repositories.data?.map((repo: any) => (
+                    <Repo key={repo.id} data={repo} />
+                  ))
+                : ghAuthorized?.data === false && (
+                    <div className="col">
+                      <a href={getGithubOAuthURL()} className="btn btn-danger">
+                        Authorize github
+                      </a>
+                    </div>
+                  )}
+            </div>
+          </div>
         </div>
-        <FavoriteRepositories repos={repositories.data || []} />
+        <aside className="col-3">
+          {repositories.data && (
+            <FavoriteRepositories repos={repositories.data} />
+          )}
+        </aside>
       </div>
-    </>
+    </Layout>
   );
 };

@@ -1,0 +1,16 @@
+.fav-wrapper {
+  margin-right: 16px;
+  margin-top: 34px;
+  height: 100%;
+}
+
+.fav-repos-wrapper {
+  margin-top: 16px;
+  height: calc(100% - 122px);
+  overflow-y: auto;
+  padding-bottom: 120px;
+  .toast {
+    max-width: 100%;
+    margin-bottom: 16px;
+  }
+}

@@ -57,15 +57,6 @@ export const Login: React.FC = (props) => {
                     error={data?.errors?.password}
                   />
                 </Form.Group>
-                <Form.Group controlId="login-check">
-                  <Form.Check
-                    type="checkbox"
-                    label="I will hire Fernando"
-                    className="small"
-                    checked
-                    disabled
-                  />
-                </Form.Group>
                 <Button
                   variant="primary"
                   type="submit"
@@ -84,7 +75,7 @@ export const Login: React.FC = (props) => {
               </p>
             </div>
 
-            {!error && complete && <Redirect to="/profile" />}
+            {!error && complete && <Redirect to="/github" />}
           </div>
         </div>
       </div>

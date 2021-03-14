@@ -4,12 +4,12 @@ import "./App.css";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { GithubCallback } from "./components/GithubCallback/GithubCallback";
 import { GoogleCallback } from "./components/GoogleCallback/GoogleCallback";
-import { Home } from "./components/Home/Home";
 import { Login } from "./components/Login/Login";
-import { Profile } from "./components/Profile/Profile";
 import { Signup } from "./components/Signup/Signup";
 import { PrivateRoute } from "./routes/PrivateRoute";
 import { useAuth } from "./AuthContext";
+import { Repositories } from "./components/Repositories/Repositories";
+import { CalendarEvents } from "./components/CalendarEvents/CalendarEvents";
 
 const App = () => {
   const { userLoggedIn } = useAuth();
@@ -31,13 +31,18 @@ const App = () => {
         <PrivateRoute
           allowWhen={authorized}
           exact
-          path="/profile"
-          component={Profile}
+          path="/events"
+          component={CalendarEvents}
         />
-        <PrivateRoute allowWhen={authorized} exact path="/" component={Home} />
+        <PrivateRoute
+          allowWhen={authorized}
+          exact
+          path="/github"
+          component={Repositories}
+        />
         <Route exact path="/signup" component={Signup} />
         <Route exact path="/login" component={Login} />
-        <Route component={Login} />
+        <Route path="/" component={Repositories} />
       </Switch>
     </Router>
   );

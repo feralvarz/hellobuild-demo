@@ -82,6 +82,25 @@ export function useLogin() {
 }
 
 /**
+ * Sets a new property in Local storage once the user is logged in the App.
+ */
+export function usePersistLogin(): [any, Function] {
+  const [userLoggedIn, setUserLogIn] = useLogin();
+  let authed = JSON.parse(JSON.stringify(userLoggedIn));
+
+  // Check if user is already logged in
+  if (localStorage.getItem("sessionID")) {
+    authed.data = { authorized: true };
+  } else {
+    if (userLoggedIn.data?.authorized === true) {
+      localStorage.setItem("sessionID", JSON.stringify(generateSecret(10)));
+    }
+  }
+
+  return [authed, setUserLogIn];
+}
+
+/**
  * Custom Hook, post data to Register User endpoint
  * @returns Hook
  */
@@ -124,6 +143,18 @@ export function useGoogleTokenCallback() {
 export function useGoogleAuthorizeRefresh() {
   return useApiEndpoints((data: any) => ({
     url: `http://localhost:3000/calendar/authorize`,
+    method: "GET",
+  }));
+}
+
+/**
+ * Custom Hook, resets Google's authorization
+ * clear token and revokek access in google client
+ * @returns Hook
+ */
+export function useGoogleReset() {
+  return useApiEndpoints(() => ({
+    url: `http://localhost:3000/calendar/reset/`,
     method: "GET",
   }));
 }

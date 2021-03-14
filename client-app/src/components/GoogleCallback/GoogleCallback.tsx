@@ -14,5 +14,5 @@ export const GoogleCallback: React.FC = (props) => {
     apiResponse.current = true;
   }
 
-  return <>{complete && <Redirect to="/profile" />}</>;
+  return <>{complete && <Redirect to="/events" />}</>;
 };

@@ -9,6 +9,7 @@ export const viewerRepos = gql`
           nameWithOwner
           description
           name
+          url
           languages(first: 50) {
             totalCount
             nodes {
