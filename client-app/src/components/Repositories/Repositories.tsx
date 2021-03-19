@@ -1,26 +1,19 @@
-import React, { useEffect } from "react";
+import React from "react";
 import "./Repositories.scss";
-import {
-  getGithubOAuthURL,
-  useFirstRender,
-  useGithubAuthorized,
-  useListRepos,
-} from "../../hooks/hooks";
+import { getGithubOAuthURL } from "../../hooks/hooks";
 import { FavoriteRepositories } from "../FavoriteRepositories/FavoriteRepositories";
-
-import { Repo } from "./Repo";
+import { IRepo, Repo } from "./Repo";
 import { Layout } from "../Layout/Layout";
-export const Repositories: React.FC = () => {
-  const [ghAuthorized, setGHAuthorized] = useGithubAuthorized();
-  const [repositories, setRequestRepos] = useListRepos();
-  const firstRender = useFirstRender();
+import { of } from "rxjs";
+import { pluck, switchMap } from "rxjs/operators";
+import { ajax } from "rxjs/ajax";
 
-  useEffect(() => {
-    if (firstRender) {
-      setGHAuthorized({});
-      setRequestRepos({});
-    }
-  });
+// types definitions missing from use-epic package
+// @ts-ignore
+import { useEpic } from "use-epic";
+
+export const Repositories: React.FC = () => {
+  const [repositories] = useEpic(isAuthorized);
 
   return (
     <Layout>
@@ -30,26 +23,38 @@ export const Repositories: React.FC = () => {
             <h1>Your repositories</h1>
 
             <div className="row repo-list">
-              {ghAuthorized.data
-                ? repositories.data?.map((repo: any) => (
-                    <Repo key={repo.id} data={repo} />
-                  ))
-                : ghAuthorized?.data === false && (
-                    <div className="col">
-                      <a href={getGithubOAuthURL()} className="btn btn-danger">
-                        Authorize github
-                      </a>
-                    </div>
-                  )}
+              {repositories === null && (
+                <div className="col">
+                  <a href={getGithubOAuthURL()} className="btn btn-danger">
+                    Authorize github
+                  </a>
+                </div>
+              )}
+
+              {repositories?.map((repo: IRepo) => (
+                <Repo key={repo.id} data={repo} />
+              ))}
             </div>
           </div>
         </div>
         <aside className="col-3">
-          {repositories.data && (
-            <FavoriteRepositories repos={repositories.data} />
-          )}
+          {repositories && <FavoriteRepositories repos={repositories} />}
         </aside>
       </div>
     </Layout>
   );
 };
+
+// Return repositories only when user is authorized
+const isAuthorized = () =>
+  ajax.getJSON<boolean>(`http://localhost:3000/api/github/authorized`).pipe(
+    switchMap((authorized) => {
+      if (!authorized) {
+        return of(null);
+      } else {
+        return ajax
+          .post(`http://localhost:3000/api/github/repos`)
+          .pipe(pluck("response"));
+      }
+    })
+  );
