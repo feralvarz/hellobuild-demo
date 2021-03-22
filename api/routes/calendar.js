@@ -11,7 +11,7 @@ const gCal = new GoogleCalendarAuth();
  */
 router.get("/auth-url", async (req, res, next) => {
   const url = gCal.getAccessToken();
-  res.send(url);
+  res.json(url);
 });
 
 router.get("/authorize", async (req, res, next) => {
@@ -25,7 +25,7 @@ router.get("/authorized", async (req, res, next) => {
       res.send(true);
     })
     .catch((err) => {
-      res.status(401).send(false);
+      res.send(false);
     });
 });
 
@@ -50,6 +50,7 @@ router.get("/reset", async (req, res, next) => {
  * List upcoming events from next month
  */
 router.get("/list", async (req, res, next) => {
+  gCal.authorize();
   const auth = gCal.oAuth2Client;
   const calendar = google.calendar({ version: "v3", auth });
   const now = new Date();
@@ -82,6 +83,7 @@ router.get("/list", async (req, res, next) => {
  * Cancels and event in calendar
  */
 router.post("/cancelevent", async (req, res, next) => {
+  gCal.authorize();
   const event = req.body;
   event.status = "cancelled";
 

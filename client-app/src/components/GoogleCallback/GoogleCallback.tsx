@@ -1,18 +1,15 @@
-import React, { useRef } from "react";
+import React from "react";
 import { Redirect } from "react-router-dom";
-import { useGoogleTokenCallback, useQuery } from "../../hooks/hooks";
+import { googleCallbackPipe, useQuery } from "../../hooks/hooks";
 
-export const GoogleCallback: React.FC = (props) => {
-  const [calToken, setCalToken] = useGoogleTokenCallback();
-  const { complete } = calToken;
+// types definitions missing from use-epic package
+// @ts-ignore
+import { useEpic } from "use-epic";
+
+export const GoogleCallback: React.FC = () => {
   const query = useQuery();
   const code: string | null = query.get("code");
-  const apiResponse: React.MutableRefObject<boolean> = useRef(false);
+  const [tokenChain] = useEpic(googleCallbackPipe, { deps: { code } });
 
-  if (!apiResponse.current) {
-    setCalToken({ code });
-    apiResponse.current = true;
-  }
-
-  return <>{complete && <Redirect to="/events" />}</>;
+  return <>{tokenChain && <Redirect to="/events" />}</>;
 };

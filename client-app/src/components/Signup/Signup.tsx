@@ -24,10 +24,6 @@ export const Signup: React.FC = (props) => {
     setUserRegistered(data);
   };
 
-  const removeLocalStorage = () => {
-    localStorage.clear();
-  };
-
   return (
     <div className="base-form-wrapper">
       <div className="container ">

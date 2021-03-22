@@ -1,52 +1,20 @@
-import React, { useEffect, useRef } from "react";
-import { Button, Card } from "react-bootstrap";
-import {
-  useCancelCalEvent,
-  useListEvents,
-  useCalendarAuthURL,
-  useGoogleAuthorizeRefresh,
-  useFirstRender,
-  useGoogleIsAuthorized,
-  useGoogleReset,
-} from "../../hooks/hooks";
+import React from "react";
+import { Card } from "react-bootstrap";
+import { calendarPipe } from "../../hooks/hooks";
 import { ICalEvent } from "../../types/types";
 import { Layout } from "../Layout/Layout";
 import "./CalendarEvents.scss";
 
+// types definitions missing from use-epic package
+// @ts-ignore
+import { useEpic } from "use-epic";
+
 export const CalendarEvents: React.FC = (props) => {
-  const [hasGoogleToken, setGoogleAuthorized] = useGoogleIsAuthorized();
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [cancelledEvent, setCancelCalEvent] = useCancelCalEvent();
-  const calEventRef = useRef(null);
-  const [events, setRequestEvents] = useListEvents();
-  const [calAuthURL, setCalAuthURL] = useCalendarAuthURL();
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [googleAuthRefresh, setGoogleAuthRefresh] = useGoogleAuthorizeRefresh();
-  const [googleReset, setGoogleReset] = useGoogleReset();
-
-  const firstRender = useFirstRender();
-  useEffect(() => {
-    if (cancelledEvent.data !== calEventRef.current) {
-      calEventRef.current = cancelledEvent.data;
-      setRequestEvents({});
-    }
-    if (firstRender) {
-      setCalAuthURL({});
-      setGoogleAuthorized({});
-      setRequestEvents({});
-    }
-  });
-
-  function refresh() {
-    setGoogleAuthRefresh({});
-    setRequestEvents({});
-  }
-
-  function resetAccess() {
-    setGoogleReset({});
-  }
+  const [calendar, dispatch] = useEpic(calendarPipe);
+  const refresh = () => dispatch("refresh");
+  const cancelEvent = (data: ICalEvent) => {
+    dispatch({ type: "cancelEvent", payload: data });
+  };
 
   return (
     <Layout>
@@ -55,45 +23,52 @@ export const CalendarEvents: React.FC = (props) => {
           <div className="inner">
             <h1 className="d-flex">
               Calendar Events
-              {hasGoogleToken.error && (
-                <span className="ml-auto">
-                  <a
-                    href={calAuthURL.data}
-                    className="btn btn-primary btn-sm"
-                    rel="noopener"
-                  >
-                    Authorize Calendar
-                  </a>
-                </span>
-              )}
-              {hasGoogleToken.data && events.error && (
-                <span className="ml-auto">
+              {calendar?.authorized && calendar?.error && (
+                <span>
                   <button
-                    onClick={() => refresh()}
-                    className="btn btn-success btn-sm mr-2"
+                    onClick={refresh}
+                    className="btn btn-success btn-sm ml-2"
                   >
                     Refresh token
-                  </button>
-                  <button
-                    onClick={() => resetAccess()}
-                    className="btn btn-danger btn-sm"
-                  >
-                    Revoke access
                   </button>
                 </span>
               )}
             </h1>
 
-            <div className="row events-list">
-              {!!events.data?.length &&
-                events.data.map((calEvent: any) => (
-                  <EventCard
-                    key={calEvent.id}
-                    data={calEvent}
-                    callback={setCancelCalEvent}
-                  />
-                ))}
-            </div>
+            {calendar?.reloadMessage}
+
+            {calendar?.authorized === false && (
+              <div className="row">
+                <div className="col">
+                  <p>
+                    Google calendar needs your authorization to run in this app{" "}
+                  </p>
+                  <div className="">
+                    <a
+                      href={calendar.authUrl}
+                      className="btn btn-primary btn-sm"
+                      rel="noopener"
+                    >
+                      Authorize Calendar
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {calendar && !!calendar.events?.length && (
+              <div className="events-list">
+                <div className="row ">
+                  {calendar.events.map((calEvent: any) => (
+                    <EventCard
+                      key={calEvent.id}
+                      data={calEvent}
+                      callback={cancelEvent}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -108,7 +83,7 @@ const EventCard: React.FC<{
 }> = ({ data, className, callback }) => {
   return (
     <div className={`mb-4 ${className || "col-lg-6"}`}>
-      <Card className="repo-card h-100 shadow">
+      <Card className="repo-card sh-100 shadow">
         <Card.Body>
           <Card.Title className="text-truncate">
             <a
