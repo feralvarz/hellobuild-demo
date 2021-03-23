@@ -1,7 +1,28 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { useRef, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { IUserFormData } from "../types/types";
+import { ICalEvent, IUserFormData } from "../types/types";
+
+// types definitions missing from use-epic package
+// @ts-ignore
+import { ofType } from "use-epic";
+import { ajax } from "rxjs/ajax";
+import {
+  catchError,
+  delay,
+  map,
+  mergeMap,
+  repeat,
+  repeatWhen,
+  retry,
+  retryWhen,
+  share,
+  shareReplay,
+  startWith,
+  switchMap,
+  take,
+} from "rxjs/operators";
+import { of, forkJoin, Observable, Subject, combineLatest, concat } from "rxjs";
 
 /**
  * Helper to detect first render in components
@@ -135,54 +156,6 @@ export function useGoogleTokenCallback() {
 }
 
 /**
- * Custom Hook, handles Google's authorization
- * note: after first authorization is necessary to call again this endpoint
- * in order to perform a token refresh
- * @returns Hook
- */
-export function useGoogleAuthorizeRefresh() {
-  return useApiEndpoints((data: any) => ({
-    url: `http://localhost:3000/calendar/authorize`,
-    method: "GET",
-  }));
-}
-
-/**
- * Custom Hook, resets Google's authorization
- * clear token and revokek access in google client
- * @returns Hook
- */
-export function useGoogleReset() {
-  return useApiEndpoints(() => ({
-    url: `http://localhost:3000/calendar/reset/`,
-    method: "GET",
-  }));
-}
-
-/**
- * Custom Hook, check if user has granted authorization to Google
- * @returns Hook
- */
-export function useGoogleIsAuthorized() {
-  return useApiEndpoints(() => ({
-    url: `http://localhost:3000/calendar/authorized`,
-    method: "GET",
-  }));
-}
-
-/**
- * Custom Hook, cancel an event in calendar
- * @returns Hook
- */
-export function useCancelCalEvent() {
-  return useApiEndpoints((data: any) => ({
-    url: `http://localhost:3000/calendar/cancelevent`,
-    method: "POST",
-    data,
-  }));
-}
-
-/**
  * Custom Hook, check if user has granted authorization to Github
  * @returns Hook
  */
@@ -201,28 +174,6 @@ export function useListRepos() {
   return useApiEndpoints((data: any) => ({
     url: `http://localhost:3000/api/github/repos`,
     method: "POST",
-  }));
-}
-
-/**
- * Custom Hook, post data to Register User endpoint
- * @returns Hook
- */
-export function useListEvents() {
-  return useApiEndpoints((data: any) => ({
-    url: `http://localhost:3000/calendar/list`,
-    method: "GET",
-  }));
-}
-
-/**
- * Custom Hook, gets url to open google calendar oauth
- * @returns Hook
- */
-export function useCalendarAuthURL() {
-  return useApiEndpoints(() => ({
-    url: `http://localhost:3000/calendar/auth-url`,
-    method: "GET",
   }));
 }
 
@@ -255,4 +206,89 @@ export function generateSecret(size: number): string {
   return [...Array(size)]
     .map(() => Math.floor(Math.random() * 16).toString(16))
     .join("");
+}
+
+/**
+ * Google endpoints
+ */
+
+const generatedAuthURL$ = ajax
+  .getJSON<string>("http://localhost:3000/calendar/auth-url")
+  .pipe(shareReplay());
+
+const authorized$: Observable<boolean> = ajax.getJSON(
+  "http://localhost:3000/calendar/authorized"
+);
+
+export const updateClient$: Observable<boolean> = ajax.getJSON(
+  "http://localhost:3000/calendar/authorize"
+);
+
+const list$: Observable<ICalEvent[]> = ajax.getJSON(
+  "http://localhost:3000/calendar/list"
+);
+
+const events$ = forkJoin({
+  events: list$,
+}).pipe(
+  retry(1),
+  map((res) => ({ events: res.events, authorized: true, error: false })),
+  catchError((err) => {
+    return authorized$.pipe(
+      map((authed: boolean) => ({
+        events: [],
+        authorized: false,
+        error: err.response.errors,
+      }))
+    );
+  }),
+  share()
+);
+
+interface IAction {
+  type: string;
+  payload: any;
+}
+
+export function calendarPipe(action$: any) {
+  const refresh$: Subject<any> = action$.pipe(ofType("refresh"));
+
+  const cancelEvent$ = action$.pipe(
+    ofType("cancelEvent"),
+    switchMap((action: IAction) => {
+      return ajax.post(
+        "http://localhost:3000/calendar/cancelevent",
+        action.payload,
+        {
+          "Content-Type": "application/json",
+        }
+      );
+    }),
+    startWith({})
+  );
+
+  return combineLatest([generatedAuthURL$, cancelEvent$]).pipe(
+    mergeMap(([authUrl, _]) => {
+      return events$.pipe(
+        map((events) => ({
+          authUrl,
+          ...events,
+        }))
+      );
+    }),
+    repeatWhen(() => refresh$),
+    retryWhen((errors) => errors.pipe(delay(1000), take(5))),
+    catchError((err) => of({ reloadMessage: "Please reload the app" }))
+  );
+}
+
+const setResponseCode = (code: string | null) =>
+  ajax.post(`http://localhost:3000/calendar/oauth2callback?code=${code}`);
+
+export function googleCallbackPipe(action$: any, state$: any, deps: any) {
+  return concat(
+    setResponseCode(deps.code).pipe(delay(1500)),
+    updateClient$.pipe(retry(2), repeat(1)),
+    of(true)
+  );
 }
